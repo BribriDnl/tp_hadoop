@@ -196,35 +196,40 @@ public class MyPiEstimator {
             List<double[]> points = new ArrayList<>();
             long bound = size.get();
 
+            // The following loop is supposed to populate my points list using the Halton Sequence
+            // However  it adds the same point (which is generally the last from the Halton Sequence) size times
             for (long l = 0; l < bound; l++) {
                 double[] nextPoint = hs.nextPoint();
                 points.add(nextPoint);
             }
-            System.out.println(" My list ");
+            // Expected : 100 different points
+            // Actual : 100 times the last point from the Halton Sequence
+            System.out.println("List values using loop");
             for (int i=0;i< size.get();i++){
                 System.out.println(Arrays.toString(points.get(i)));
             }
-            System.out.println("--------------------------------");
-            System.out.println("List values using IntStream");
-            hs = new HaltonSequence(offset.get());
-            final HaltonSequence test = new HaltonSequence(offset.get());
 
+            System.out.println("--------------------------------");
+
+            System.out.println("List values using IntStream");
+            // Tried using IntStream syntax but had the same weird output
+            final HaltonSequence test = new HaltonSequence(offset.get());
             IntStream
                     .range(0, Math.toIntExact(size.get()))
                     .forEach(i -> points.add(test.nextPoint()));
-
             points.forEach(doubles -> System.out.println(Arrays.toString(doubles)));
 
-
             System.out.println("--------------------------------");
+
             System.out.println("Real values using Loop");
+            // Now this loop actually prints 100 points
             for (int i = 0; i< size.get(); i++){
                 System.out.println(Arrays.toString(hs.nextPoint()));
             }
             System.out.println("--------------------------------");
 
-            long insideDarts, outsideDarts;
 
+            long insideDarts, outsideDarts;
             insideDarts = points.stream()
                     .map(doubles -> Math.pow(doubles[0] - 0.5, 2) + Math.pow(doubles[1] - 0.5, 2))
                     .filter(aDouble -> aDouble <= Math.pow(0.5, 2))
