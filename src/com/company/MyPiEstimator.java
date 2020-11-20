@@ -193,11 +193,13 @@ public class MyPiEstimator {
 
             //TO DO:
             //Get size points from the sequence and check whether they are inside the circle or not
-            List<double[]> points = new ArrayList<>();
-            long bound = size.get();
+            List<double[]> points = LongStream.range(0,size.get())
+                    .mapToObj(i -> hs.nextPoint().clone())
+                    .collect(Collectors.toList());
 
             // The following loop is supposed to populate my points list using the Halton Sequence
             // However  it adds the same point (which is generally the last from the Halton Sequence) size times
+            /*
             for (long l = 0; l < bound; l++) {
                 double[] nextPoint = hs.nextPoint();
                 points.add(nextPoint);
@@ -227,7 +229,7 @@ public class MyPiEstimator {
                 System.out.println(Arrays.toString(hs.nextPoint()));
             }
             System.out.println("--------------------------------");
-
+             */
 
             long insideDarts, outsideDarts;
             insideDarts = points.stream()
