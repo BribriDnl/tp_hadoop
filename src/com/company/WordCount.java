@@ -68,7 +68,6 @@ public class WordCount {
        extends Reducer<Text,IntWritable,Text,IntWritable>{//Key_Input, Value_Input, Key_Output, Value_Output
 
     private IntWritable result = new IntWritable();
-    private static int totalWords = 0;
     private static double maxFrequency = 0;
     private static String mostFrequentWord = "";
 
@@ -82,19 +81,30 @@ public class WordCount {
       for (IntWritable val : values) {
         sum += val.get();
       }
-      totalWords+=sum;
-      double wordFrequency = (double) sum /totalWords;
-      if (maxFrequency < wordFrequency){
-          maxFrequency = wordFrequency;
-          mostFrequentWord = key.toString();
+      /**
+       * The computation of the most frequent word is done here.
+       * To get the frequency, we can explicitly set the number of reducers to 1 s.t all words have to go through the same reducer, thus allowing to sum over all words.
+       * Check by using the find function (^F) with 'job.setNumReduceTasks(1)'
+       *
+       * /
+      if(maxFrequency < sum) {
+        maxFrequency = sum;
+        mostFrequentWord = key.toString();
       }
+      result.set(sum);
       context.write(key, result);
+
     }
     //Useful for Exercise 2.3
     //cleanup is called once for each Reducer after all
     //its reduce tasks finish
     protected void cleanup(Context context) throws IOException, InterruptedException {
         // context.write(new Text(mostFrequentWord), new IntWritable(maxFrequency));
+
+
+      /** This line writes the most frequent word in the logs
+       *  $HADOOP_HOME/logs/userlogs/<task_id>/<container_id>/stdout
+       */
         String msg ="Most frequent word : "+mostFrequentWord+" with frequency = "+maxFrequency;
         System.out.println(msg);
         Logger.getGlobal().log(Level.INFO, msg);
@@ -106,6 +116,7 @@ public class WordCount {
 	  //you can add parameters to it using: conf.set(name,value)
     //these parameters will be visible to all Mappers and Reducers
     //who retrieve the configuration
+    System.out.println(Arrays.toString(args));
 	  Configuration conf = new Configuration();
     //Useful for Exercise 2.2
     conf.set("stop.words", "Lorem,ipsum,dolor");
@@ -128,6 +139,10 @@ public class WordCount {
 
     //we indicate the class that implements the Reducer
     job.setReducerClass(IntSumReducer.class);
+    /**
+     * Explicitly setting the number of reducers
+     */
+    job.setNumReduceTasks(1);
     //the framework calls reduce(WritableComparable, Iterable<Writable>, Context)
     //method for each <key, (list of values)> pair in the grouped inputs.
 
